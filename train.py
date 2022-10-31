@@ -226,24 +226,6 @@ class MLP(torch.nn.Module):
         x = self.lins[-1](x)
         return F.log_softmax(x, dim=-1)
 
-args = {
-    'lr': 0.01
-    , 'num_layers': 3
-    , 'hidden_channels':256
-    , 'dropout': 0.5
-    , 'heads': 4
-    , 'weight_decay': 5e-7
-                  }
-epochs = 2000
-log_steps =10 # log记录周期
-
-model = GCN(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, num_layers=args['num_layers'], dropout=args['dropout']).to(device)
-# model = GAT(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, heads=args['heads'], dropout=args['dropout']).to(device)
-# model=SGC(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, K=2, dropout=args['dropout']).to(device)
-# model = MLP(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, num_layers=args['num_layers'], dropout=args['dropout'], batchnorm=True).to(device)
-eval_metric = 'auc'  #使用AUC衡量指标
-evaluator = Evaluator(eval_metric)
-
 def train(model, data, train_idx, optimizer):
      # data.y is labels of shape (N, ) 
     model.train()
@@ -278,6 +260,28 @@ def test(model, data, split_idx, evaluator):
 
     return eval_results, losses, y_pred
 
+
+
+
+
+#训练模型并且进行测试
+args = {
+    'lr': 0.01
+    , 'num_layers': 3
+    , 'hidden_channels':256
+    , 'dropout': 0.5
+    , 'heads': 4
+    , 'weight_decay': 5e-7
+                  }
+epochs = 2000
+log_steps =10 # log记录周期
+
+model = GCN(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, num_layers=args['num_layers'], dropout=args['dropout']).to(device)
+# model = GAT(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, heads=args['heads'], dropout=args['dropout']).to(device)
+# model=SGC(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, K=2, dropout=args['dropout']).to(device)
+# model = MLP(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, num_layers=args['num_layers'], dropout=args['dropout'], batchnorm=True).to(device)
+eval_metric = 'auc'  #使用AUC衡量指标
+evaluator = Evaluator(eval_metric)
 print(sum(p.numel() for p in model.parameters()))  #模型总参数量
 
 model.reset_parameters()
