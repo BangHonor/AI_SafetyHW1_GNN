@@ -93,138 +93,138 @@ class GCN(torch.nn.Module):
         x = self.convs[-1](x, adj_t)
         return x.log_softmax(dim=1)
 
-class GAT(torch.nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels, heads, dropout):
-        super().__init__()
-        self.lins = torch.nn.ModuleList()
-        self.lins.append(torch.nn.Linear(in_channels, hidden_channels))
-        self.lins.append(torch.nn.Linear(hidden_channels, hidden_channels))
+# class GAT(torch.nn.Module):
+#     def __init__(self, in_channels, hidden_channels, out_channels, heads, dropout):
+#         super().__init__()
+#         self.lins = torch.nn.ModuleList()
+#         self.lins.append(torch.nn.Linear(in_channels, hidden_channels))
+#         self.lins.append(torch.nn.Linear(hidden_channels, hidden_channels))
 
-        self.bns = torch.nn.ModuleList()
-        self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
-        self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
-        self.conv1 = GATConv(hidden_channels, hidden_channels, heads, dropout=dropout)
-        self.conv2 = GATConv(hidden_channels * heads, out_channels, heads=1,
-                             concat=False, dropout=dropout)
-        self.dropout = dropout
+#         self.bns = torch.nn.ModuleList()
+#         self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
+#         self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
+#         self.conv1 = GATConv(hidden_channels, hidden_channels, heads, dropout=dropout)
+#         self.conv2 = GATConv(hidden_channels * heads, out_channels, heads=1,
+#                              concat=False, dropout=dropout)
+#         self.dropout = dropout
 
-    def forward(self, x, edge_index):
-        for i, lin in enumerate(self.lins):
-            x = lin(x)
-            x = self.bns[i](x)
-            x = F.elu(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
-        x = F.elu(self.conv1(x, edge_index))
-        x = F.dropout(x, p=self.dropout, training=self.training)
-        x = self.conv2(x, edge_index)
-        return torch.log_softmax(x, dim=-1)
+#     def forward(self, x, edge_index):
+#         for i, lin in enumerate(self.lins):
+#             x = lin(x)
+#             x = self.bns[i](x)
+#             x = F.elu(x)
+#             x = F.dropout(x, p=self.dropout, training=self.training)
+#         x = F.elu(self.conv1(x, edge_index))
+#         x = F.dropout(x, p=self.dropout, training=self.training)
+#         x = self.conv2(x, edge_index)
+#         return torch.log_softmax(x, dim=-1)
 
-    def reset_parameters(self):
-        self.conv1.reset_parameters()
-        self.conv2.reset_parameters()
-        for bn in self.bns:
-            bn.reset_parameters()
-        for lin in self.lins:
-            lin.reset_parameters()
+#     def reset_parameters(self):
+#         self.conv1.reset_parameters()
+#         self.conv2.reset_parameters()
+#         for bn in self.bns:
+#             bn.reset_parameters()
+#         for lin in self.lins:
+#             lin.reset_parameters()
 
-class SAGE(torch.nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels, num_layers,
-                 dropout):
-        super(SAGE, self).__init__()
+# class SAGE(torch.nn.Module):
+#     def __init__(self, in_channels, hidden_channels, out_channels, num_layers,
+#                  dropout):
+#         super(SAGE, self).__init__()
 
-        self.convs = torch.nn.ModuleList()
-        self.convs.append(SAGEConv(in_channels, hidden_channels))
-        for _ in range(num_layers - 2):
-            self.convs.append(SAGEConv(hidden_channels, hidden_channels))
-        self.convs.append(SAGEConv(hidden_channels, out_channels))
+#         self.convs = torch.nn.ModuleList()
+#         self.convs.append(SAGEConv(in_channels, hidden_channels))
+#         for _ in range(num_layers - 2):
+#             self.convs.append(SAGEConv(hidden_channels, hidden_channels))
+#         self.convs.append(SAGEConv(hidden_channels, out_channels))
 
-        self.dropout = dropout
+#         self.dropout = dropout
 
-    def reset_parameters(self):
-        for conv in self.convs:
-            conv.reset_parameters()
+#     def reset_parameters(self):
+#         for conv in self.convs:
+#             conv.reset_parameters()
 
-    def forward(self, x, edge_index, edge_weight=None):
-        for conv in self.convs[:-1]:
-            x = conv(x, edge_index, edge_weight)
-            x = F.relu(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
-        x = self.convs[-1](x, edge_index, edge_weight)
-        return torch.log_softmax(x, dim=-1)
+#     def forward(self, x, edge_index, edge_weight=None):
+#         for conv in self.convs[:-1]:
+#             x = conv(x, edge_index, edge_weight)
+#             x = F.relu(x)
+#             x = F.dropout(x, p=self.dropout, training=self.training)
+#         x = self.convs[-1](x, edge_index, edge_weight)
+#         return torch.log_softmax(x, dim=-1)
 
-class SGC(nn.Module):
+# class SGC(nn.Module):
     
-    def __init__(self, in_channels, hidden_channels, out_channels, K, dropout):
-        super(SGC, self).__init__()
-        self.lins = torch.nn.ModuleList()
-        self.lins.append(torch.nn.Linear(in_channels, hidden_channels))
-        self.lins.append(torch.nn.Linear(hidden_channels, hidden_channels))
+#     def __init__(self, in_channels, hidden_channels, out_channels, K, dropout):
+#         super(SGC, self).__init__()
+#         self.lins = torch.nn.ModuleList()
+#         self.lins.append(torch.nn.Linear(in_channels, hidden_channels))
+#         self.lins.append(torch.nn.Linear(hidden_channels, hidden_channels))
 
-        self.bns = torch.nn.ModuleList()
-        self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
-        self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
+#         self.bns = torch.nn.ModuleList()
+#         self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
+#         self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
 
-        self.convs = torch.nn.ModuleList()
-        self.convs.append(SGConv(hidden_channels, out_channels, K, cached=False))
+#         self.convs = torch.nn.ModuleList()
+#         self.convs.append(SGConv(hidden_channels, out_channels, K, cached=False))
 
-        self.dropout = dropout
+#         self.dropout = dropout
 
-    def reset_parameters(self):
-        for conv in self.convs:
-            conv.reset_parameters()
-        for bn in self.bns:
-            bn.reset_parameters()
-        for lin in self.lins:
-            lin.reset_parameters()
+#     def reset_parameters(self):
+#         for conv in self.convs:
+#             conv.reset_parameters()
+#         for bn in self.bns:
+#             bn.reset_parameters()
+#         for lin in self.lins:
+#             lin.reset_parameters()
 
-    def forward(self, x, adj_t):
-        for i, lin in enumerate(self.lins):
-            x = lin(x)
-            x = self.bns[i](x)
-            x = F.relu(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
-        x = self.convs[-1](x, adj_t)
-        return x.log_softmax(dim=1)
+#     def forward(self, x, adj_t):
+#         for i, lin in enumerate(self.lins):
+#             x = lin(x)
+#             x = self.bns[i](x)
+#             x = F.relu(x)
+#             x = F.dropout(x, p=self.dropout, training=self.training)
+#         x = self.convs[-1](x, adj_t)
+#         return x.log_softmax(dim=1)
 
-class MLP(torch.nn.Module):
-    def __init__(self
-                 , in_channels
-                 , hidden_channels
-                 , out_channels
-                 , num_layers
-                 , dropout
-                 , batchnorm=True):
-        super(MLP, self).__init__()
-        self.lins = torch.nn.ModuleList()
-        self.lins.append(torch.nn.Linear(in_channels, hidden_channels))
-        self.batchnorm = batchnorm
-        if self.batchnorm:
-            self.bns = torch.nn.ModuleList()
-            self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
-        for _ in range(num_layers - 2):
-            self.lins.append(torch.nn.Linear(hidden_channels, hidden_channels))
-            if self.batchnorm:
-                self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
-        self.lins.append(torch.nn.Linear(hidden_channels, out_channels))
+# class MLP(torch.nn.Module):
+#     def __init__(self
+#                  , in_channels
+#                  , hidden_channels
+#                  , out_channels
+#                  , num_layers
+#                  , dropout
+#                  , batchnorm=True):
+#         super(MLP, self).__init__()
+#         self.lins = torch.nn.ModuleList()
+#         self.lins.append(torch.nn.Linear(in_channels, hidden_channels))
+#         self.batchnorm = batchnorm
+#         if self.batchnorm:
+#             self.bns = torch.nn.ModuleList()
+#             self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
+#         for _ in range(num_layers - 2):
+#             self.lins.append(torch.nn.Linear(hidden_channels, hidden_channels))
+#             if self.batchnorm:
+#                 self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
+#         self.lins.append(torch.nn.Linear(hidden_channels, out_channels))
 
-        self.dropout = dropout
+#         self.dropout = dropout
 
-    def reset_parameters(self):
-        for lin in self.lins:
-            lin.reset_parameters()
-        if self.batchnorm:
-            for bn in self.bns:
-                bn.reset_parameters()
+#     def reset_parameters(self):
+#         for lin in self.lins:
+#             lin.reset_parameters()
+#         if self.batchnorm:
+#             for bn in self.bns:
+#                 bn.reset_parameters()
 
-    def forward(self, x):    
-        for i, lin in enumerate(self.lins[:-1]):
-            x = lin(x)
-            if self.batchnorm:
-                x = self.bns[i](x)
-            x = F.relu(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
-        x = self.lins[-1](x)
-        return F.log_softmax(x, dim=-1)
+#     def forward(self, x):    
+#         for i, lin in enumerate(self.lins[:-1]):
+#             x = lin(x)
+#             if self.batchnorm:
+#                 x = self.bns[i](x)
+#             x = F.relu(x)
+#             x = F.dropout(x, p=self.dropout, training=self.training)
+#         x = self.lins[-1](x)
+#         return F.log_softmax(x, dim=-1)
 
 def train(model, data, train_idx, optimizer):
      # data.y is labels of shape (N, ) 
