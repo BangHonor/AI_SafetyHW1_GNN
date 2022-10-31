@@ -28,7 +28,6 @@ args = {
 
 不足：使用full-batch进行训练，可能会消耗比较大的内存；将所有的边都视为一样的，但是实际上不同的边应该有不同的权重，但是GAT将会占用更多的内存，在GPU允许的情况下应该优先GAT；GCN聚合邻接节点信息的方式是通过加权平均，聚合方式较为简单。
 
-与不同模型的对比：
-模型	 MLP+GCN(Mine)  GCN	  MLP	 MLP+SGC MLP+GAT
-Test Acc(%)	73.5	70.4	71.9	73.5	72.0
+与不同模型的测试集Acc对比：MLP+GCN(Mine):73.5, GCN:70.4, MLP:71.9, MLP+SGC:73.5, MLP+GAT:72.0
+
 
