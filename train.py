@@ -237,10 +237,10 @@ args = {
 epochs = 2000
 log_steps =10 # log记录周期
 
-# model = GCN(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, num_layers=args['num_layers'], dropout=args['dropout']).to(device)
+model = GCN(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, num_layers=args['num_layers'], dropout=args['dropout']).to(device)
 # model = GAT(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, heads=args['heads'], dropout=args['dropout']).to(device)
 # model=SGC(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, K=2, dropout=args['dropout']).to(device)
-model = MLP(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, num_layers=args['num_layers'], dropout=args['dropout'], batchnorm=True).to(device)
+# model = MLP(in_channels=data.x.size(-1), hidden_channels=args['hidden_channels'], out_channels=nlabels, num_layers=args['num_layers'], dropout=args['dropout'], batchnorm=True).to(device)
 eval_metric = 'auc'  #使用AUC衡量指标
 evaluator = Evaluator(eval_metric)
 
@@ -286,28 +286,25 @@ best_valid = 0
 min_valid_loss = 1e8
 
 i=13
-# model.load_state_dict(torch.load(save_dir+'/model'+str(i)+'.pt'))
-# for epoch in range(1,epochs + 1):
-#     loss = train(model, data, train_idx, optimizer)
-#     eval_results, losses, out = test(model, data, split_idx, evaluator)
-#     train_eval, valid_eval = eval_results['train'], eval_results['valid']
-#     train_loss, valid_loss = losses['train'], losses['valid']
+model.load_state_dict(torch.load(save_dir+'/model'+str(i)+'.pt'))
+for epoch in range(1,epochs + 1):
+    loss = train(model, data, train_idx, optimizer)
+    eval_results, losses, out = test(model, data, split_idx, evaluator)
+    train_eval, valid_eval = eval_results['train'], eval_results['valid']
+    train_loss, valid_loss = losses['train'], losses['valid']
 
-#     if valid_loss < min_valid_loss:
-#         min_valid_loss = valid_loss
-#         torch.save(model.state_dict(), save_dir+'/model'+str(i)+'.pt') #将表现最好的模型保存
+    if valid_loss < min_valid_loss:
+        min_valid_loss = valid_loss
+        torch.save(model.state_dict(), save_dir+'/model'+str(i)+'.pt') #将表现最好的模型保存
 
-#     if epoch % log_steps == 0:
-#         print(f'Epoch: {epoch:02d}, '
-#               f'Loss: {loss:.4f}, '
-#               f'Train: {100 * train_eval:.3f}, ' # 我们将AUC值乘上100，使其在0-100的区间内
-#               f'Valid: {100 * valid_eval:.3f} ')
+    if epoch % log_steps == 0:
+        print(f'Epoch: {epoch:02d}, '
+              f'Loss: {loss:.4f}, '
+              f'Train: {100 * train_eval:.3f}, ' # 我们将AUC值乘上100，使其在0-100的区间内
+              f'Valid: {100 * valid_eval:.3f} ')
 
 torch.cuda.empty_cache()
 model.load_state_dict(torch.load(save_dir+'model'+str(i)+'.pt'))
-# out = model(data.x,data.adj_t)
-out = model(data.x)
-# torch.save(out, save_dir+'/out'+str(i)+'.pt')
-# output=torch.load(save_dir+'out'+str(i)+'.pt',  map_location=torch.device('cpu'))
+out = model(data.x,data.adj_t)
 output_numpy=out.detach().cpu().numpy()
 np.save(save_dir+'out_numpy'+str(i)+'.npy',output_numpy,allow_pickle=True)
